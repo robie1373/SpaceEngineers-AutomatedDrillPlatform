@@ -20,4 +20,4 @@ public const float yRetractionVelocity = -1.0F;
 public const float zExtensionVelocity = .5F;
 public const float zRetractionVelocity = -1F;
 public const float zStepSize = 2.5F;
-public const float rotationStepRad = (Math.PI / 180) * 90F;
+public float rotationStepRad = (Convert.ToSingle(Math.PI * 0.25));

@@ -9,7 +9,7 @@ IMyBlockGroup zgroup;
 List<IMyExtendedPistonBase> ypistons = new List<IMyExtendedPistonBase>();
 List<IMyExtendedPistonBase> zpistons = new List<IMyExtendedPistonBase>();
 List<IMyShipDrill> drills = new List<IMyShipDrill>();
-List<IMyMotorAdvancedStator> rotors = new List<IMyMotorAdvancedStator>;
+List<IMyMotorAdvancedStator> rotors = new List<IMyMotorAdvancedStator>();
 public string platform_status; // Use for state machine controlling platform
 public string previous_platform_status;
 // boring -> y extending drills on
@@ -36,7 +36,7 @@ public void Initialize() {
   start_drills();
   set_velocity(ypistons, yExtensionVelocity);
   set_velocity(zpistons, zExtensionVelocity);
-  set_max_limit(ypistons, 0F);
+  set_max_limit(ypistons, 10F);
   set_max_limit(zpistons, 0F);
   previous_platform_status = "uninitialized";
   platform_status = "boring";
@@ -75,7 +75,7 @@ public void Main(string argument, UpdateType updateSource) {
         if (platform_status != previous_platform_status) {
           start_drills();        
           set_velocity(ypistons, yExtensionVelocity);
-          // extend piston (test if this is needed. setting velocity to positive should do it.)
+          extend_piston(ypistons);
           previous_platform_status = "boring";
           break;
         }
@@ -91,7 +91,7 @@ public void Main(string argument, UpdateType updateSource) {
             break;
           }
         }
-        break;
+        //break;
 
       case "lifting":
         // test if enteriong lifting or continueing
@@ -110,7 +110,7 @@ public void Main(string argument, UpdateType updateSource) {
             break;
           }
         }
-        break;
+        //break;
 
       case "extending":
         float new_MaxLimit = zpistons[0].MaxLimit + zStepSize;
@@ -142,7 +142,7 @@ public void Main(string argument, UpdateType updateSource) {
         } else { //we are continuing
           // test if reached new maxlimit
           if (zpistons[0].CurrentPosition == new_MaxLimit) {
-            platform_status == "boring";
+            platform_status = "boring";
             break;
           } else {
             get_status(zpistons);
@@ -172,7 +172,7 @@ public void Main(string argument, UpdateType updateSource) {
             break;
           }
         }
-        break;
+        //break;
 
       case "terminating":
         // test if entering or contiuning
