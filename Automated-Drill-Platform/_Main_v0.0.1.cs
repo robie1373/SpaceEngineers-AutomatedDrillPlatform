@@ -3,10 +3,12 @@
 
 //// GLOBAL VARIABLES
 // for transfering data between Runtime events
+public var yPistonGroup;
+public var zPistonGroup;
 
 //// Program()
 // for variable initialization, setup, etc.
-public Program() {
+public void Program() {
   Runtime.UpdateFrequency = FREQ; // set from _Customize
   Initialize();
 } // Program()
@@ -34,14 +36,6 @@ public void Main(string arg, UpdateType source) {
 } // Main()
 
 public void Program__GetPistons() {
-//  IMyBlockGroup xgroup = GridTerminalSystem.GetBlockGroupWithName(xPistonGroup);
-//    if (group == null)
-//      {
-//        Echo("X Group not found");
-//        return;
-//      }
-//      delete__me(xgroup);
-
   IMyBlockGroup ygroup = GridTerminalSystem.GetBlockGroupWithName(yPistonGroup);
     if (ygroup == null)
     {
