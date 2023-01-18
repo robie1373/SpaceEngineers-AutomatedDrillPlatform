@@ -18,4 +18,5 @@ public const string zPistonGroup = "zPistons";
 public const float yExtensionVelocity = .01F;
 public const float yRetractionVelocity = -1.0F;
 public const float zExtensionVelocity = .5F;
-public const float zRetractionVelocity = -.5F;
+public const float zRetractionVelocity = -1F;
+public const float zStepSize = 2.5F;
