@@ -16,6 +16,6 @@ public const string zPistonGroup = "zPistons";
 // In game I have not been able to determine if this value can
 // be less than .01
 public const float yExtensionVelocity = .01F;
-public const float yRetractionVelocity = 1.0F;
+public const float yRetractionVelocity = -1.0F;
 public const float zExtensionVelocity = .5F;
-public const float zRetractionVelocity = .5F;
+public const float zRetractionVelocity = -.5F;
