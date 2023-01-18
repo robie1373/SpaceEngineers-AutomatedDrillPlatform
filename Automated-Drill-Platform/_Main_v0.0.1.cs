@@ -32,22 +32,19 @@ public void Main(string argument, UpdateType updateSource) {
   if((updateSource & UpdateType.Update100) != 0) { // TODO: can != 0 be dropped? // had to delete source check due to compile error
     // run each Main__...() submethod here
   //Main__WriteDiagnostics(); // This method was in _Template
-  Echo($"Y position: {ygroup[0].CurrentPosition}");
-  Echo($"Z position: {zgroup[0].CurrentPosition}");
   }
 } // Main()
 
 public void Program__GetPistons() {
-  ygroup = GridTerminalSystem.GetBlockGroupWithName(yPistonGroup) as IMyExtendedPistonBase;
+  ygroup = GridTerminalSystem.GetBlockGroupWithName(yPistonGroup);
   if (ygroup == null)
   {
     Echo("Y Group not found");
     return;
   }
-  //ygroup.GetBlocks(yblocks);
   get_status(ygroup);
 
-  zgroup = GridTerminalSystem.GetBlockGroupWithName(zPistonGroup) as IMyExtendedPistonBase;
+  zgroup = GridTerminalSystem.GetBlockGroupWithName(zPistonGroup);
   if (zgroup == null)
   {
     Echo("Z Group not found");
@@ -59,10 +56,13 @@ public void Program__GetPistons() {
 
 public void get_status(IMyBlockGroup group) {
   Echo($"{group.Name}:");
-  List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
-  group.GetBlocks(blocks);
-  foreach (var block in blocks)
+  List<IMyExtendedPistonBase> pistons = new List<IMyExtendedPistonBase>();
+  group.GetBlocksOfType(pistons);
+  foreach (var piston in pistons)
   {
-    Echo($"- {block.CustomName}");
+    Echo($"- {piston.CustomName}");
+    Echo($"position: {piston.CurrentPosition}");
+    Echo($"MaxLimit: {piston.MaxLimit}");
+
   }
 }
