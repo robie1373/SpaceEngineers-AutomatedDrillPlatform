@@ -4,8 +4,10 @@
 //// GLOBAL VARIABLES
 // for transfering data between Runtime events
 
-List<IMyExtendedPistonBase> ygroup;
-List<IMyExtendedPistonBase> zgroup;
+IMyBlockGroup ygroup;
+IMyBlockGroup zgroup;
+List<IMyTerminalBlock> yblocks = new List<IMyTerminalBlock>();
+List<IMyTerminalBlock> zblocks = new List<IMyTerminalBlock>();
 
 //// Program()
 // for variable initialization, setup, etc.
@@ -23,9 +25,6 @@ public void Initialize() {
 public void Save() {
 } // Save()
 
-//// Main()
-// called when the Programmable Block is "Run",
-// or automatically by UpdateFrequency
 public void Main(string argument, UpdateType updateSource) {
   // NOTE: multiple trigger sources can roll in on the same tick
   // test each trigger individually, not with if() else if () blocks
@@ -45,7 +44,8 @@ public void Program__GetPistons() {
     Echo("Y Group not found");
     return;
   }
-  delete__me(ygroup);
+  //ygroup.GetBlocks(yblocks);
+  get_status(ygroup);
 
   zgroup = GridTerminalSystem.GetBlockGroupWithName(zPistonGroup) as IMyExtendedPistonBase;
   if (zgroup == null)
@@ -53,11 +53,11 @@ public void Program__GetPistons() {
     Echo("Z Group not found");
     return;
   }
-  delete__me(zgroup);
+  get_status(zgroup);
 
 }
 
-public void delete__me(IMyBlockGroup group) {
+public void get_status(IMyBlockGroup group) {
   Echo($"{group.Name}:");
   List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
   group.GetBlocks(blocks);

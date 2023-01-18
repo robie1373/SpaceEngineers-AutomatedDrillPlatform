@@ -33,8 +33,8 @@ public const float zRetractionVelocity = .5F;
 //// GLOBAL VARIABLES
 // for transfering data between Runtime events
 
-List<IMyExtendedPistonBase> ygroup;
-List<IMyExtendedPistonBase> zgroup;
+List<IMyBlockGroup> ygroup;
+List<IMyBlockGroup> zgroup;
 
 //// Program()
 // for variable initialization, setup, etc.

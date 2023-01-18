@@ -19,10 +19,10 @@ public const string zPistonGroup = "zPistons";
 // number of pistons in the group multiplied by this velocity.
 // In game I have not been able to determine if this value can
 // be less than .01
-public const float yExtensionVelocity = .01;
-public const float yRetractionVelocity = 1;
-public const float zExtensionVelocity = .5;
-public const float zRetractionVelocity = .5;
+public const float yExtensionVelocity = .01F;
+public const float yRetractionVelocity = 1.0F;
+public const float zExtensionVelocity = .5F;
+public const float zRetractionVelocity = .5F;
 //
 // XXX Automated-Drill-Platform//_Main_v0.0.1.cs XXX
 //
@@ -61,40 +61,39 @@ public void Main(string argument, UpdateType updateSource) {
 
   if((updateSource & UpdateType.Update100) != 0) { // TODO: can != 0 be dropped? // had to delete source check due to compile error
     // run each Main__...() submethod here
-  Main__WriteDiagnostics();
+  //Main__WriteDiagnostics(); // This method was in _Template
   Echo($"Y position: {ygroup[0].CurrentPosition}");
   Echo($"Z position: {zgroup[0].CurrentPosition}");
   }
 } // Main()
 
 public void Program__GetPistons() {
-  IMyBlockGroup ygroup = GridTerminalSystem.GetBlockGroupWithName(yPistonGroup);
-    if (ygroup == null)
-    {
-      Echo("Y Group not found");
-      return;
-    }
-    delete__me(ygroup);
+  ygroup = GridTerminalSystem.GetBlockGroupWithName(yPistonGroup) as IMyExtendedPistonBase;
+  if (ygroup == null)
+  {
+    Echo("Y Group not found");
+    return;
+  }
+  delete__me(ygroup);
 
-  IMyBlockGroup zgroup = GridTerminalSystem.GetBlockGroupWithName(zPistonGroup);
-    if (zgroup == null)
-    {
-      Echo("Z Group not found");
-      return;
-    }
-    delete__me(zgroup);
+  zgroup = GridTerminalSystem.GetBlockGroupWithName(zPistonGroup) as IMyExtendedPistonBase;
+  if (zgroup == null)
+  {
+    Echo("Z Group not found");
+    return;
+  }
+  delete__me(zgroup);
 
 }
 
 public void delete__me(IMyBlockGroup group) {
-
-Echo($"{group.Name}:");
-List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
-group.GetBlocks(blocks);
-foreach (var block in blocks)
-{
+  Echo($"{group.Name}:");
+  List<IMyTerminalBlock> blocks = new List<IMyTerminalBlock>();
+  group.GetBlocks(blocks);
+  foreach (var block in blocks)
+  {
     Echo($"- {block.CustomName}");
-}
+  }
 }
 //
 // XXX Automated-Drill-Platform//_Template_v0.0.1.cs XXX
