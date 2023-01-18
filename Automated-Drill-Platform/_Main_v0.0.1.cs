@@ -10,6 +10,7 @@ List<IMyExtendedPistonBase> ypistons = new List<IMyExtendedPistonBase>();
 List<IMyExtendedPistonBase> zpistons = new List<IMyExtendedPistonBase>();
 List<IMyShipDrill> drills = new List<IMyShipDrill>();
 public string platform_status; // Use for state machine controlling platform
+public string previous_platform_status;
 // boring -> y extending drills on
 // lifting -> y retracting drills on
 // extending -> z extending drills on
@@ -35,7 +36,11 @@ public void Initialize() {
   }
   set_velocity(ypistons, yExtensionVelocity);
   set_velocity(zpistons, zExtensionVelocity);
+  // set rotor velocity to some good value #TODO
+  // set rotor angle to 0 #TODO
+  previous_platform_status = "uninitialized";
   platform_status = "boring";
+
 } // Initialize()
 
 public void Save() {
@@ -59,22 +64,104 @@ public void Main(string argument, UpdateType updateSource) {
   }
   switch (platform_status) {
     case "boring":
-      //do things
+      // test if entering boring state or continuieng
+      // if entering
+        // turn drills on
+        // set y velocity to positive
+        // extend piston (test if this is needed. setting velocity to positive should do it.)
+        // set previous_platform_status to boring
+        // break
+      // else if continouing
+        // test if it reached the bottom of the hole
+          // if yes
+           // change platform_status to lifting
+           // break
+          // else
+            // echo status?
+            //break
       break;
     case "lifting":
-      // do things
+      // test if enteriong lifting or continueing
+      // if entering
+        // set y veloicty to -.5
+        // set previous_platform_status to lifting
+        // break
+      // else
+        // test if reached the top
+        // if yes
+          // change status to extending
+          // break
+        // else
+          // echo status
+          // break
       break;
     case "extending":
-      //do things
+      // test if entering extending or continuing
+      // if entering
+        // test is maxlimit >= 10
+        //if yes
+          // set z velocity to -.5
+          // set z max limit to stepsize (new variable needed)
+          // if z position == 0 (fully retracted?)
+            // change status to rotating
+            // break
+          // else
+            // break
+        //else start extending
+          // set z velocity to positive
+          // test is new maxlimit > 10?
+            // if yes
+              // set new z max limit to 10
+            // else
+              // set z MaxLimit to old_z_maxlimit + stepsize (new varialbe needed)
+              // set previous_platform_status to extending
+              // break
+      // else we are continuing
+        // test if reached new maxlimit
+        // if yes
+          // change status to boring
+          // break
+        // else
+          // echo status
+          // break
       break;
     case "rotating":
-      //do things
+      //test if entering or continuing
+      // if entering
+        // new angle == current angle + 90
+        // if new anggle >= 360 we've made a whole circle
+          // set status to terminating
+          // break
+        // else 
+          // set rotor angle to new angle
+          // change previous_platform_status to rotating
+          // break
+      // else continuing
+        // if current angle == new angle
+          // change platform_status to boring
+          // break
+        // else still rotating
+          // echo status
+          // break
       break;
     case "terminating":
-      //do things
+      // test if entering or contiuning
+      // if entering
+        // turn drills off
+        // set previous_platform_status to terminating
+        // if y position > 0
+          // set y velocity negative something
+          // break
+        // else y is 0
+          // if z > 0
+            // set z velocity negative somethign
+            // break
+          // else z is also 0
+            // echo zugzug
+            // maybe we add a light we can flash red?
       break;
     default:
-      //do things
+      Echo("Unknown state. Please check platform configuration and code.");
       break;
   }
 } // Main()
