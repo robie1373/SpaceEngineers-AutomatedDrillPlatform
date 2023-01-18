@@ -9,6 +9,7 @@ IMyBlockGroup zgroup;
 List<IMyExtendedPistonBase> ypistons = new List<IMyExtendedPistonBase>();
 List<IMyExtendedPistonBase> zpistons = new List<IMyExtendedPistonBase>();
 List<IMyShipDrill> drills = new List<IMyShipDrill>();
+List<IMyMotorAdvancedStator> rotors = new List<IMyMotorAdvancedStator>;
 public string platform_status; // Use for state machine controlling platform
 public string previous_platform_status;
 // boring -> y extending drills on
@@ -28,16 +29,13 @@ public Program() {
 public void Initialize() {
   // run each Program__...() submethods here
   Program__GetPistons();
-  //List<IMyShipDrill> drills = new List<IMyShipDrill>();
+  GridTerminalSystem.GetBlocksOfType(rotors);
+  // set rotor velocity to some good value #TODO
+  rotors[0].UpperLimitDeg = 0F; // set rotor angle to 0 #TODO
   GridTerminalSystem.GetBlocksOfType(drills);
-  foreach (var drill in drills)
-  {
-    drill.ApplyAction("OnOff_On");
-  }
+  start_drills();
   set_velocity(ypistons, yExtensionVelocity);
   set_velocity(zpistons, zExtensionVelocity);
-  // set rotor velocity to some good value #TODO
-  // set rotor angle to 0 #TODO
   previous_platform_status = "uninitialized";
   platform_status = "boring";
 
@@ -51,114 +49,149 @@ public void Main(string argument, UpdateType updateSource) {
   // test each trigger individually, not with if() else if () blocks
   if((updateSource & UpdateType.Update100) != 0) { // TODO: can != 0 be dropped? 
     // run each Main__...() submethod here
+    /////////////////////////////////////////////
+    ///// temporary main. delete this when switch is complete
+    ///// or for testing switch/////////////////
+    //////////////////////////////
     set_max_limit(zpistons, 2.5F);
     extend_piston(zpistons);
     if (is_at_full_extension(ypistons)) {
       Echo("hole is deep");
       set_velocity(ypistons, -0.5F);
-      all_stop();
+      stop_drills();
+    ();
     } else {
       Echo("hole not deep");
     }
         get_status(ypistons);
   }
+  ////////////////// end of temporary main /////////
+  //////////////////////////////////////////////////
   switch (platform_status) {
     case "boring":
       // test if entering boring state or continuieng
-      // if entering
-        // turn drills on
-        // set y velocity to positive
+      if (platform_status != previous_platform_status) {
+        start_drills();        
+        set_velocity(ypistons, yExtensionVelocity);
         // extend piston (test if this is needed. setting velocity to positive should do it.)
-        // set previous_platform_status to boring
-        // break
-      // else if continouing
+        previous_platform_status = "boring";
+        break;
+      }
+        
+      else {  // continouing
         // test if it reached the bottom of the hole
-          // if yes
-           // change platform_status to lifting
-           // break
-          // else
-            // echo status?
-            //break
+        if (is_at_full_extension(ypistons)) {
+          platform_status = "lifting";
+          break;
+        }
+        else {
+          get_status(ypistons);
+          break;
+        }
+      }
       break;
+
     case "lifting":
       // test if enteriong lifting or continueing
-      // if entering
-        // set y veloicty to -.5
-        // set previous_platform_status to lifting
-        // break
-      // else
+      if (platform_status != previous_platform_status) {        
+        set_velocity(ypistons, yRetractionVelocity);
+        previous_platform_status = "lifting";
+        break;
+      } else { // continuing to lift
         // test if reached the top
-        // if yes
-          // change status to extending
-          // break
-        // else
-          // echo status
-          // break
+        if (ypistons[0].CurrentPosition == 0F) {
+          platform_status = "extending";
+          break;
+         } else {
+          Echo("Y extension exceeded. Lifting.");
+          get_status(ypistons);
+          break;
+         }
+      }
       break;
+
     case "extending":
+      float new_MaxLimit = zpistons[0].MaxLimit + zStepSize;
       // test if entering extending or continuing
-      // if entering
+      if (platform_status != previous_platform_status) {
         // test is maxlimit >= 10
-        //if yes
-          // set z velocity to -.5
-          // set z max limit to stepsize (new variable needed)
-          // if z position == 0 (fully retracted?)
-            // change status to rotating
-            // break
-          // else
-            // break
-        //else start extending
-          // set z velocity to positive
+        if (is_at_full_extension(zpistons)) {
+          set_velocity(zpistons, zRetractionVelocity);// set z velocity to -.5
+          set_max_limit(zpistons, 0F); // set z max limit to stepsize (new variable needed)
+          if (zpistons[0].CurrentPosition == 0) {//(fully retracted?)
+            platform_status = "rotating";
+            break;
+          } else {
+            Echo("Z extension exceeded. Retracting");
+            get_status(zpistons);
+            break;
+          }
+        } else { //start extending
+          set_velocity(zpistons, zExtensionVelocity); // set z velocity to positive
           // test is new maxlimit > 10?
-            // if yes
-              // set new z max limit to 10
-            // else
-              // set z MaxLimit to old_z_maxlimit + stepsize (new varialbe needed)
-              // set previous_platform_status to extending
-              // break
-      // else we are continuing
+            if (new_MaxLimit > 10F) {
+              set_max_limit(zpistons, 10F); // set new z max limit to 10
+            } else {
+              set_max_limit(zpistons, new_MaxLimit); 
+              previous_platform_status = "extending";
+              break;
+            }
+        }
+       } else { //we are continuing
         // test if reached new maxlimit
-        // if yes
-          // change status to boring
-          // break
-        // else
-          // echo status
-          // break
+        if (zpistons[0].CurrentPosition == new_MaxLimit) {
+          platform_status == "boring";
+          break;
+        } else {
+          get_status(zpistons);
+          break;
+        }
+       }
       break;
+
     case "rotating":
+    float new_angle = rotors[0].UpperLimitRad + rotationStepRad;
       //test if entering or continuing
-      // if entering
-        // new angle == current angle + 90
-        // if new anggle >= 360 we've made a whole circle
-          // set status to terminating
-          // break
-        // else 
-          // set rotor angle to new angle
-          // change previous_platform_status to rotating
-          // break
-      // else continuing
-        // if current angle == new angle
-          // change platform_status to boring
-          // break
-        // else still rotating
-          // echo status
-          // break
+      if (platform_status != previous_platform_status) {
+        if (new_angle >= (2 * Math.PI)) { //we've made a whole circle
+          platform_status = "terminating";
+          break;
+        } else {
+          rotors[0].UpperLimitRad = new_angle; // set rotor angle to new angle
+          previous_platform_status = "rotating";
+          break;
+        }
+      } else { //continuing
+        if (rotors[0].Angle == new_angle) {
+          platform_status = "boring";
+          break;
+        } else { //still rotating
+          Echo($"Rotor at {rotors[0].Angle}");
+          break;
+        }
+      }
       break;
+
     case "terminating":
       // test if entering or contiuning
-      // if entering
-        // turn drills off
-        // set previous_platform_status to terminating
-        // if y position > 0
-          // set y velocity negative something
-          // break
-        // else y is 0
-          // if z > 0
-            // set z velocity negative somethign
-            // break
-          // else z is also 0
-            // echo zugzug
+      if (platform_status != previous_platform_status) {
+        stop_drills();// turn drills off
+        previous_platform_status = "terminating";
+      } else {
+        if (ypistons[0].CurrentPosition > 0F) {
+          set_velocity(ypistons, yRetractionVelocity);
+          break;
+        } else { //y is 0
+          if (zpistons[0].CurrentPosition > 0) {
+            set_velocity(zpistons, zRetractionVelocity);
+            break;
+          } else { //z is also 0
+            Echo(" zugzug");
             // maybe we add a light we can flash red?
+            break;
+          }
+        }
+      }
       break;
     default:
       Echo("Unknown state. Please check platform configuration and code.");
@@ -230,12 +263,19 @@ public void extend_piston(List<IMyExtendedPistonBase> pistons) {
   }
 }
 
-public void all_stop() {
+public void stop_drills() {
  foreach (var drill in drills)
   {
     drill.ApplyAction("OnOff_Off");
     Echo("All drills stopped");
-    platform_status = "terminating";
+  }
+}
+
+public void start_drills() {
+ foreach (var drill in drills)
+  {
+    drill.ApplyAction("OnOff_On");
+    Echo("All drills started");
   }
 }
 
