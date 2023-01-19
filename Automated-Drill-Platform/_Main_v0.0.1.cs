@@ -118,10 +118,10 @@ public void Main(string argument, UpdateType updateSource) {
 
       case "extending":
         Echo($"E, prev: {previous_platform_status}, current: {platform_status}");
-        new_zMaxLimit = zpistons[0].MaxLimit + zStepSize;
-        Echo($"new_MaxLimit: {new_zMaxLimit}");
         // test if entering extending or continuing
         if (platform_status != previous_platform_status) {
+          new_zMaxLimit = zpistons[0].MaxLimit + zStepSize;
+          Echo($"new_MaxLimit: {new_zMaxLimit}");
           // test is maxlimit >= 10
           if (is_at_full_extension(zpistons)) {
             set_velocity(zpistons, zRetractionVelocity);// set z velocity to -.5
@@ -135,26 +135,26 @@ public void Main(string argument, UpdateType updateSource) {
               break;
             }
           } else { //start extending
-            set_velocity(zpistons, zExtensionVelocity); // set z velocity to positive
+            set_velocity(zpistons, zExtensionVelocity);
             
             // test is new maxlimit > 10?
-              if (new_zMaxLimit > 10F) {
-                set_max_limit(zpistons, 10F); // set new z max limit to 10
-                extend_piston(zpistons);
-                previous_platform_status = "extending";
-                Echo($"bp6 {new_zMaxLimit}");
-                break;
-              } else {
+              //if (new_zMaxLimit > 10F) {
+              //  set_max_limit(zpistons, 10F);
+              //  extend_piston(zpistons);
+              //  previous_platform_status = "extending";
+               // Echo($"bp6 {new_zMaxLimit}");
+              //  break;
+              //} else {
                 set_max_limit(zpistons, new_zMaxLimit); 
                 extend_piston(zpistons);
                 previous_platform_status = "extending";
                 Echo($"bp5 {new_zMaxLimit}");
                 break;
-              }
+              //}
           }
         } else { //we are continuing
           // test if reached new maxlimit
-          Echo($"{new_zMaxLimit}");
+          Echo($"continuing -> {new_zMaxLimit}");
           Echo("bp1");
           Echo($"currentPosition is {zpistons[0].CurrentPosition}");
           //Echo($"new_Maxlimit is {new_Maxlimit}");
@@ -166,6 +166,7 @@ public void Main(string argument, UpdateType updateSource) {
             break;
           } else {
             Echo("bp3");
+            extend_piston(zpistons);
             get_status(zpistons);
             break;
           }
