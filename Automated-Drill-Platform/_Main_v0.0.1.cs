@@ -36,7 +36,7 @@ public void Initialize() {
   start_drills();
   set_velocity(ypistons, yExtensionVelocity);
   set_velocity(zpistons, zExtensionVelocity);
-  set_max_limit(ypistons, 10F);
+  set_max_limit(ypistons, 10F); // set to 10 for production
   set_max_limit(zpistons, 0F);
   previous_platform_status = "uninitialized";
   platform_status = "boring";
@@ -71,6 +71,8 @@ public void Main(string argument, UpdateType updateSource) {
   //////////////////////////////////////////////////
     switch (platform_status) {
       case "boring":
+            Echo($"b, prev: {previous_platform_status}, current: {platform_status}");
+
         // test if entering boring state or continuieng
         if (platform_status != previous_platform_status) {
           start_drills();        
@@ -94,6 +96,8 @@ public void Main(string argument, UpdateType updateSource) {
         //break;
 
       case "lifting":
+            Echo($"L, prev: {previous_platform_status}, current: {platform_status}");
+
         // test if enteriong lifting or continueing
         if (platform_status != previous_platform_status) {        
           set_velocity(ypistons, yRetractionVelocity);
@@ -113,7 +117,9 @@ public void Main(string argument, UpdateType updateSource) {
         //break;
 
       case "extending":
-        float new_MaxLimit = zpistons[0].MaxLimit + zStepSize;
+        Echo($"E, prev: {previous_platform_status}, current: {platform_status}");
+        new_zMaxLimit = zpistons[0].MaxLimit + zStepSize;
+        Echo($"new_MaxLimit: {new_zMaxLimit}");
         // test if entering extending or continuing
         if (platform_status != previous_platform_status) {
           // test is maxlimit >= 10
@@ -130,28 +136,45 @@ public void Main(string argument, UpdateType updateSource) {
             }
           } else { //start extending
             set_velocity(zpistons, zExtensionVelocity); // set z velocity to positive
+            
             // test is new maxlimit > 10?
-              if (new_MaxLimit > 10F) {
+              if (new_zMaxLimit > 10F) {
                 set_max_limit(zpistons, 10F); // set new z max limit to 10
-              } else {
-                set_max_limit(zpistons, new_MaxLimit); 
+                extend_piston(zpistons);
                 previous_platform_status = "extending";
+                Echo($"bp6 {new_zMaxLimit}");
+                break;
+              } else {
+                set_max_limit(zpistons, new_zMaxLimit); 
+                extend_piston(zpistons);
+                previous_platform_status = "extending";
+                Echo($"bp5 {new_zMaxLimit}");
                 break;
               }
           }
         } else { //we are continuing
           // test if reached new maxlimit
-          if (zpistons[0].CurrentPosition == new_MaxLimit) {
+          Echo($"{new_zMaxLimit}");
+          Echo("bp1");
+          Echo($"currentPosition is {zpistons[0].CurrentPosition}");
+          //Echo($"new_Maxlimit is {new_Maxlimit}");
+          //Echo($" test: {zpistons[0].CurrentPosition == new_MaxLimit}");
+          
+          if (zpistons[0].CurrentPosition == new_zMaxLimit) {
+            Echo("bp2");
             platform_status = "boring";
             break;
           } else {
+            Echo("bp3");
             get_status(zpistons);
             break;
           }
         }
+        Echo("bp4");
         break;
 
       case "rotating":
+        Echo($"rotating, prev: {previous_platform_status}, current: {platform_status}");
       float new_angle = rotors[0].UpperLimitRad + rotationStepRad;
         //test if entering or continuing
         if (platform_status != previous_platform_status) {
@@ -175,17 +198,22 @@ public void Main(string argument, UpdateType updateSource) {
         //break;
 
       case "terminating":
+        Echo($"terminating, prev: {previous_platform_status}, current: {platform_status}");
+
         // test if entering or contiuning
         if (platform_status != previous_platform_status) {
           stop_drills();// turn drills off
           previous_platform_status = "terminating";
+          break;
         } else {
           if (ypistons[0].CurrentPosition > 0F) {
             set_velocity(ypistons, yRetractionVelocity);
+            retract_piston(ypistons);
             break;
           } else { //y is 0
             if (zpistons[0].CurrentPosition > 0) {
               set_velocity(zpistons, zRetractionVelocity);
+              retract_piston(zpistons);
               break;
             } else { //z is also 0
               Echo(" zugzug");
@@ -234,12 +262,20 @@ public void make_list_from_group(IMyBlockGroup group, List<IMyExtendedPistonBase
 public void get_status(List<IMyExtendedPistonBase> pistons) {
   //Echo($"{group.Name}:");
   //var pistons = make_list_from_group(group);
+  bool verbose = false;
+  if (verbose) {
   foreach (var piston in pistons)
   {
     Echo($"- {piston.CustomName}");
     Echo($"position: {piston.CurrentPosition}");
     Echo($"MaxLimit: {piston.MaxLimit}");
     Echo($"Velocity: {piston.Velocity}");
+  }
+  } else {
+    Echo($"- {pistons[0].CustomName}");
+    Echo($"position: {pistons[0].CurrentPosition}");
+    Echo($"MaxLimit: {pistons[0].MaxLimit}");
+    Echo($"Velocity: {pistons[0].Velocity}");
   }
 }
 
@@ -263,6 +299,12 @@ public void extend_piston(List<IMyExtendedPistonBase> pistons) {
   foreach (var piston in pistons)
   {
     piston.Extend();
+  }
+}
+public void retract_piston(List<IMyExtendedPistonBase> pistons) {
+  foreach (var piston in pistons)
+  {
+    piston.Retrract();
   }
 }
 
